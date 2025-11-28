@@ -1,4 +1,4 @@
-module xormplus
+module github.com/cuisi521/xormplus
 
 go 1.25.3
 

@@ -16,7 +16,7 @@
 ## 📦 安装
 
 ```bash
-go get github.com/yourusername/project/pkg/db
+go get github.com/cuisi521/xormplus
 ```
 
 ## 🚀 快速开始

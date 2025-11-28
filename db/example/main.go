@@ -6,7 +6,7 @@ import (
 
 	"github.com/cuisi521/zap-wrapper/logger"
 
-	"xormplus/db"
+	"github.com/cuisi521/xormplus/db"
 )
 
 func main() {
