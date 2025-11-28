@@ -1,0 +1,5 @@
+2025-11-28T16:04:00.752+0800	INFO	example/main.go:17	数据库初始化开始...
+2025-11-28T16:04:00.833+0800	INFO	example/main.go:37	数据库初始化成功
+2025-11-28T16:04:20.905+0800	INFO	db/operations.go:64	Health check goroutine stopped.
+2025-11-28T16:04:20.905+0800	INFO	db/manager.go:120	Health check goroutine stopped.
+2025-11-28T16:04:20.906+0800	INFO	db/manager.go:123	Engine group closed.

@@ -5,11 +5,14 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
+
+	"github.com/cuisi521/zap-wrapper/logger"
 )
 
 // ============================================================================
@@ -18,10 +21,12 @@ import (
 
 // DBManager 数据库管理器
 type DBManager struct {
-	engineGroup *xorm.EngineGroup
-	config      Config
-	mu          sync.RWMutex
-	logger      log.ContextLogger // 预留给 zap-wrapper 的接口
+	engineGroup   *xorm.EngineGroup
+	config        Config
+	mu            sync.RWMutex
+	logger        log.ContextLogger  // 预留给 zap-wrapper 的接口
+	cancelFunc    context.CancelFunc // 用于取消 startHealthCheck goroutine
+	healthCheckWg sync.WaitGroup     // 用于等待 health check goroutine 退出
 }
 
 // 全局实例（可选，推荐使用依赖注入）
@@ -73,8 +78,12 @@ func Install(c Config, name ...string) (*DBManager, error) {
 		eg.Logger().SetLevel(log.LOG_INFO)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	mgr.cancelFunc = cancel
+	mgr.healthCheckWg.Add(1)
+
 	// 5. 启动健康检查协程 (可选)
-	go mgr.startHealthCheck()
+	go mgr.startHealthCheck(ctx)
 
 	// 6. 存储实例
 	mu.Lock()
@@ -105,7 +114,13 @@ func (m *DBManager) GetMaster() *xorm.Engine {
 func (m *DBManager) Close() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if m.cancelFunc != nil {
+		m.cancelFunc()                                 // 调用 cancelFunc 停止 goroutine
+		m.healthCheckWg.Wait()                         // 等待 goroutine 真正退出
+		logger.Info("Health check goroutine stopped.") // 示例日志
+	}
 	if m.engineGroup != nil {
+		logger.Info("Engine group closed.") // 示例日志
 		return m.engineGroup.Close()
 	}
 	return nil

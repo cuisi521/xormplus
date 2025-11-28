@@ -40,6 +40,8 @@ func main() {
 	CreateUser()
 	// 查询用户
 	QueryUser()
+
+	time.Sleep(time.Second * 20)
 }
 
 type User struct {

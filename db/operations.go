@@ -7,10 +7,12 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	"github.com/cuisi521/zap-wrapper/logger"
 	"xorm.io/xorm"
+
+	"github.com/cuisi521/zap-wrapper/logger"
 )
 
 // WithTx 事务包装器
@@ -49,20 +51,36 @@ func (m *DBManager) BatchInsert(bean interface{}, batchSize int) (int64, error) 
 }
 
 // startHealthCheck 简单的健康检查与日志告警
-func (m *DBManager) startHealthCheck() {
-	ticker := time.NewTicker(30 * time.Second)
+func (m *DBManager) startHealthCheck(ctx context.Context) {
+	defer m.healthCheckWg.Done()
+	ticker := time.NewTicker(time.Second * 2)
 	defer ticker.Stop()
-
-	for range ticker.C {
-		m.check()
+	for {
+		select {
+		case <-ticker.C:
+			m.check()
+		case <-ctx.Done():
+			// context 被取消，退出循环
+			logger.Info("Health check goroutine stopped.")
+			return
+		}
 	}
+
 }
 
 func (m *DBManager) check() {
-	// 检查主库
-	if err := m.engineGroup.Master().Ping(); err != nil {
-		logger.Errorf("[DB Health] Master database ping failed: %v", err)
-		// 可以在这里集成告警通知
+
+	master := m.GetMaster()
+	if master != nil {
+		err := master.Ping()
+		if err != nil {
+			fmt.Printf("Master DB health check failed: %v\n", err)
+			// 这里可以调用 m.logger.Error(...)
+		} else {
+			// fmt.Println("Master DB is healthy.")
+		}
+	} else {
+		fmt.Println("Master DB engine is nil during health check.")
 	}
 
 	// 检查从库 (如果需要更细粒度的控制，需要遍历 Slaves)
