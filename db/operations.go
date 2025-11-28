@@ -53,7 +53,7 @@ func (m *DBManager) BatchInsert(bean interface{}, batchSize int) (int64, error) 
 // startHealthCheck 简单的健康检查与日志告警
 func (m *DBManager) startHealthCheck(ctx context.Context) {
 	defer m.healthCheckWg.Done()
-	ticker := time.NewTicker(time.Second * 2)
+	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
