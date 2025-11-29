@@ -115,9 +115,9 @@ func (m *DBManager) Close() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.cancelFunc != nil {
-		m.cancelFunc()                                 // 调用 cancelFunc 停止 goroutine
-		m.healthCheckWg.Wait()                         // 等待 goroutine 真正退出
-		logger.Info("Health check goroutine stopped.") // 示例日志
+		m.cancelFunc()         // 调用 cancelFunc 停止 goroutine
+		m.healthCheckWg.Wait() // 等待 goroutine 真正退出
+		// logger.Info("Health check goroutine stopped.") // 示例日志
 	}
 	if m.engineGroup != nil {
 		logger.Info("Engine group closed.") // 示例日志
