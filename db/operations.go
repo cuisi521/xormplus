@@ -147,3 +147,22 @@ func GetDB(name ...string) *xorm.EngineGroup {
 	}
 	return mgr.GetEngineGroup()
 }
+
+// GetManager 获取全局默认 DBManager 实例，支持指定数据库名称
+func DBM(name ...string) *DBManager {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	var mgr *DBManager
+	if len(name) > 0 && name[0] != "" {
+		mgr = managers[name[0]]
+	} else {
+		mgr = defaultManager
+	}
+
+	if mgr == nil {
+		logger.Error("Database manager not initialized, call Install() first")
+		return nil
+	}
+	return mgr
+}
