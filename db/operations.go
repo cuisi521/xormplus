@@ -129,6 +129,10 @@ func (m *DBManager) DeleteByID(bean interface{}, id interface{}) (int64, error) 
 	return m.engineGroup.ID(id).Delete(bean)
 }
 
+func (m *DBManager) DB() *xorm.EngineGroup {
+	return m.engineGroup
+}
+
 // GetDB 获取全局默认 DB 实例，支持指定数据库名称
 func GetDB(name ...string) *xorm.EngineGroup {
 	mu.RLock()
